@@ -3,7 +3,26 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+/** Logs host/db name only (no credentials) so deploy logs prove which DB the seed hit. */
+function logSeedDatabaseTarget(): void {
+  const raw = process.env.DATABASE_URL;
+  if (!raw) {
+    console.warn('[seed] DATABASE_URL is not set');
+    return;
+  }
+  try {
+    const u = new URL(raw);
+    const db = (u.pathname || '').replace(/^\//, '') || '(default)';
+    console.log(
+      `[seed] DATABASE_URL target: host=${u.hostname} port=${u.port || '5432'} database=${db}`
+    );
+  } catch {
+    console.warn('[seed] DATABASE_URL is set but could not be parsed for logging');
+  }
+}
+
 async function main() {
+  logSeedDatabaseTarget();
   console.log('Seeding database...');
 
   await prisma.review.deleteMany();
@@ -309,9 +328,33 @@ async function main() {
     ],
   });
   console.log('Created 3 blog posts');
+
+  const [catCount, prodCount, userCount, blogCount, reviewCount] = await Promise.all([
+    prisma.category.count(),
+    prisma.product.count(),
+    prisma.user.count(),
+    prisma.blogPost.count(),
+    prisma.review.count(),
+  ]);
+  console.log(
+    `[seed] Verification counts: categories=${catCount} products=${prodCount} users=${userCount} blogPosts=${blogCount} reviews=${reviewCount}`
+  );
+  if (catCount < 3 || prodCount < 8 || userCount < 1 || blogCount < 3 || reviewCount < 4) {
+    throw new Error(
+      `[seed] Verification failed (data not readable after insert). Got: categories=${catCount} products=${prodCount} users=${userCount} blogPosts=${blogCount} reviews=${reviewCount}`
+    );
+  }
+
   console.log('Seeding complete!');
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+void (async () => {
+  try {
+    await main();
+  } catch (e) {
+    console.error(e);
+    process.exitCode = 1;
+  } finally {
+    await prisma.$disconnect();
+  }
+})();
