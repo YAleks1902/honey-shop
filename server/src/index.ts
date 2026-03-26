@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
-import { env } from './config/env';
+import { env, getCorsAllowedOrigins } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import { runMigrationsOnStartup } from './runMigrations';
 
@@ -20,7 +20,24 @@ import sitemapRoutes from './routes/sitemap.routes';
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+
+const corsAllowedOrigins = getCorsAllowedOrigins();
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (corsAllowedOrigins.has(origin)) {
+        callback(null, origin);
+        return;
+      }
+      callback(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
