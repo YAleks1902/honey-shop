@@ -13,6 +13,7 @@ async function main() {
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.blogPost.deleteMany();
   await prisma.user.deleteMany();
 
   const categories = await prisma.category.createMany({
