@@ -1,0 +1,9 @@
+# Monorepo: build and run only the Express API (server/).
+# Or set Service "Root Directory" to `server` and remove this file.
+
+[build]
+builder = "RAILPACK"
+buildCommand = "npm install --prefix server && npm run build --prefix server && cd server && npx prisma generate"
+
+[deploy]
+startCommand = "npm run start --prefix server"
