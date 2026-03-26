@@ -1,0 +1,5 @@
+# Use when Railway service "Root Directory" = `server` (app lives at /app, no server/ subfolder).
+# In Railway: Settings → Config-as-code → set file path to `server/railway.toml` if the root file is ignored.
+
+[deploy]
+startCommand = "npm start"

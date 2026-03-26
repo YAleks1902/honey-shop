@@ -1,10 +1,9 @@
-# Monorepo: build and run only the Express API (server/).
-# Or set Service "Root Directory" to `server` and remove this file.
+# Monorepo API deploy. If Railway "Root Directory" is `server`, set
+# Settings → Config-as-code → path to `server/railway.toml` (or rely on migrate-on-start in code).
 
 [build]
 builder = "RAILPACK"
 buildCommand = "npm install --prefix server && npm run build --prefix server && cd server && npx prisma generate"
 
 [deploy]
-preDeployCommand = ["sh", "-c", "cd server && npx prisma migrate deploy"]
 startCommand = "npm run start --prefix server"

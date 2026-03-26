@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import path from 'path';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
+import { runMigrationsIfProduction } from './runMigrations';
+
+runMigrationsIfProduction();
 
 import authRoutes from './routes/auth.routes';
 import productsRoutes from './routes/products.routes';
