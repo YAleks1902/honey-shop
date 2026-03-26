@@ -4,9 +4,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
-import { runMigrationsIfProduction } from './runMigrations';
-
-runMigrationsIfProduction();
+import { runMigrationsOnStartup } from './runMigrations';
 
 import authRoutes from './routes/auth.routes';
 import productsRoutes from './routes/products.routes';
@@ -43,8 +41,16 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
-  console.log(`Server running on http://localhost:${env.PORT}`);
+async function main() {
+  await runMigrationsOnStartup();
+  app.listen(env.PORT, () => {
+    console.log(`Server running on http://localhost:${env.PORT}`);
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
 
 export default app;
